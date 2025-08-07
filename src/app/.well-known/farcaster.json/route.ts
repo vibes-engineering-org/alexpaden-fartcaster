@@ -1,32 +1,30 @@
-import { PROJECT_TITLE } from "~/lib/constants";
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  const appUrl =
-    process.env.NEXT_PUBLIC_URL ||
-    `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-
-  const config = {
-    accountAssociation: {
-      header:
-        "eyJmaWQiOjEzNTk2LCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4ODE3MzE4RDZmRkY2NkExOGQ4M0ExMzc2QTc2RjZlMzBCNDNjODg4OSJ9",
-      payload:
-        "eyJkb21haW4iOiJmYXJjYXN0ZXItbWluaWFwcC10ZW1wbGF0ZS52ZXJjZWwuYXBwIn0",
-      signature:
-        "MHg5ZjkyZTdkNjRmZTNhNTE4YTEzOTBmZTdlYzAwOWQzODUzZWM2N2RmOTZiYjg1MzAwOGRlZDExNjVmOGE5OGVlNDQyYmI0MDU3OTI0ZmEzOGE3N2NlYWRiYThiMTRiN2IzMTY5N2ZjYWVlZGM3MTE1YWNiMTFmYjc2Y2EzYTc0YzFj",
-    },
-    frame: {
-      version: "1",
-      name: PROJECT_TITLE,
-      iconUrl: `${appUrl}/icon.png`,
-      homeUrl: appUrl,
-      imageUrl: `${appUrl}/frames/hello/opengraph-image`,
-      ogImageUrl: `${appUrl}/frames/hello/opengraph-image`,
-      buttonTitle: "Open",
-      splashImageUrl: `${appUrl}/splash.png`,
-      splashBackgroundColor: "#f7f7f7",
-      webhookUrl: `${appUrl}/api/webhook`,
-    },
+  const appUrl = process.env.NEXT_PUBLIC_URL || "https://localhost:3000";
+  
+  const accountAssociation = {
+    header: "eyJmaWQiOjg2OTk5OSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDc2ZDUwQjBFMTQ3OWE5QmEyYkQ5MzVGMUU5YTI3QzBjNjQ5QzhDMTIifQ",
+    payload: "eyJkb21haW4iOiJhbGV4cGFkZW4tZmFydGNhc3Rlci52ZXJjZWwuYXBwIn0",
+    signature: "MHhjYzA3NDlhZWZlMzA5YzFmNWM2NzZhZDZiNDVlMDhkZjg1MjIyOGUxYTMwYWI4NWY2ZTAxN2ViNGZhNDkyMWMxMmJhNzNkYTgyODk5ZTQ3ZjUxNmU3MDRlMTRiM2NlOGUyMWZjYWIyYzgxMDIyY2Q2NjRmZTZiN2ZjYmI0ZDI5YjFj"
   };
 
-  return Response.json(config);
+  const frame = {
+    version: "1",
+    name: "FartCaster",
+    iconUrl: `${appUrl}/icon.png`,
+    homeUrl: appUrl,
+    imageUrl: `${appUrl}/og.png`,
+    buttonTitle: "Open",
+    webhookUrl: `${appUrl}/api/webhook`,
+    splashImageUrl: `${appUrl}/splash.png`,
+    splashBackgroundColor: "#555555",
+    primaryCategory: "entertainment" as const,
+    tags: ["fart", "fun", "social", "memes", "prank"]
+  };
+
+  return NextResponse.json({
+    accountAssociation,
+    frame
+  });
 }
