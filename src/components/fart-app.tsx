@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { useFartBubbleGenerator } from "~/components/fart-bubble-generator";
+import { useFartBubbleGenerator, FartBubbleProvider } from "~/components/fart-bubble-generator";
 import { ShareCastButton } from "~/components/share-cast-button";
 import { useMiniAppSdk } from "~/hooks/use-miniapp-sdk";
 import { Search, Download, Zap } from "lucide-react";
