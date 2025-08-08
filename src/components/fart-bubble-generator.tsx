@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, createContext, useContext } from "react";
 
 export type FartBubbleConfig = {
   profileImageUrl: string;
@@ -9,7 +9,21 @@ export type FartBubbleConfig = {
   backgroundColor?: string;
 };
 
+type FartBubbleContextType = {
+  generateImage: (config: FartBubbleConfig) => Promise<string>;
+};
+
+const FartBubbleContext = createContext<FartBubbleContextType | null>(null);
+
 export function useFartBubbleGenerator() {
+  const context = useContext(FartBubbleContext);
+  if (!context) {
+    throw new Error("useFartBubbleGenerator must be used within FartBubbleProvider");
+  }
+  return context;
+}
+
+export function FartBubbleProvider({ children }: { children: React.ReactNode }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const generateImage = useCallback(async (config: FartBubbleConfig): Promise<string> => {
@@ -110,21 +124,19 @@ export function useFartBubbleGenerator() {
     });
   }, []);
 
-  return {
-    canvasRef,
-    generateImage,
-  };
+  return (
+    <FartBubbleContext.Provider value={{ generateImage }}>
+      {children}
+      <canvas
+        ref={canvasRef}
+        style={{ display: "none" }}
+        width={500}
+        height={500}
+      />
+    </FartBubbleContext.Provider>
+  );
 }
 
 export function FartBubbleGenerator() {
-  const { canvasRef } = useFartBubbleGenerator();
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ display: "none" }}
-      width={500}
-      height={500}
-    />
-  );
+  return null; // Component no longer needed as canvas is in provider
 }

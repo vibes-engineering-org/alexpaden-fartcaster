@@ -19,7 +19,7 @@ export type FarcasterUser = {
   power_badge?: boolean;
 };
 
-export function FartApp() {
+function FartAppContent() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
@@ -216,5 +216,13 @@ export function FartApp() {
         </div>
       )}
     </div>
+  );
+}
+
+export function FartApp() {
+  return (
+    <FartBubbleProvider>
+      <FartAppContent />
+    </FartBubbleProvider>
   );
 }
