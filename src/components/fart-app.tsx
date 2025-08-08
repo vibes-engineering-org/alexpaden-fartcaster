@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { FartBubbleProvider, useFartBubbleGenerator } from "~/components/fart-bubble-generator";
+import { generateFartBubbleImage } from "~/components/fart-bubble-generator";
 import { ShareCastButton } from "~/components/share-cast-button";
 import { useMiniAppSdk } from "~/hooks/use-miniapp-sdk";
 import { Search, Download, Zap } from "lucide-react";
@@ -19,14 +19,13 @@ export type FarcasterUser = {
   power_badge?: boolean;
 };
 
-function FartAppContent() {
+export function FartApp() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [targetUser, setTargetUser] = useState<FarcasterUser | null>(null);
   const [error, setError] = useState("");
   
-  const { generateImage } = useFartBubbleGenerator();
   const { context, isSDKLoaded } = useMiniAppSdk();
   const { toast } = useToast();
 
@@ -76,7 +75,7 @@ function FartAppContent() {
       setTargetUser(user);
 
       // Generate the fart bubble image
-      const imageUrl = await generateImage({
+      const imageUrl = await generateFartBubbleImage({
         profileImageUrl: user.pfp_url,
         username: user.display_name || user.username,
         currentUser: currentUser,
@@ -216,13 +215,5 @@ function FartAppContent() {
         </div>
       )}
     </div>
-  );
-}
-
-export function FartApp() {
-  return (
-    <FartBubbleProvider>
-      <FartAppContent />
-    </FartBubbleProvider>
   );
 }
