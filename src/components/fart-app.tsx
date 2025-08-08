@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { FartBubbleGenerator, useFartBubbleGenerator } from "~/components/fart-bubble-generator";
+import { FartBubbleProvider, useFartBubbleGenerator } from "~/components/fart-bubble-generator";
 import { ShareCastButton } from "~/components/share-cast-button";
 import { useMiniAppSdk } from "~/hooks/use-miniapp-sdk";
 import { Search, Download, Zap } from "lucide-react";
@@ -19,7 +19,7 @@ export type FarcasterUser = {
   power_badge?: boolean;
 };
 
-export function FartApp() {
+function FartAppContent() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
@@ -125,8 +125,6 @@ export function FartApp() {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-      <FartBubbleGenerator />
-      
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
@@ -218,5 +216,13 @@ export function FartApp() {
         </div>
       )}
     </div>
+  );
+}
+
+export function FartApp() {
+  return (
+    <FartBubbleProvider>
+      <FartAppContent />
+    </FartBubbleProvider>
   );
 }
