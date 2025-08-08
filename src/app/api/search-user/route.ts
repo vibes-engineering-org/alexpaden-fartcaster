@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     if (!username) {
       return NextResponse.json(
         { error: "Username is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -38,14 +38,14 @@ export async function GET(request: NextRequest) {
           accept: "application/json",
           api_key: apiKey,
         },
-      }
+      },
     );
 
     if (!response.ok) {
       console.error(`Neynar API error: ${response.status}`);
       return NextResponse.json(
         { error: "Failed to search user" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -53,26 +53,29 @@ export async function GET(request: NextRequest) {
     const users: FarcasterUser[] = data.result?.users || [];
 
     if (users.length === 0) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Find exact match or return the first result
-    const exactMatch = users.find((user: FarcasterUser) => 
-      user.username.toLowerCase() === username.toLowerCase()
+    const exactMatch = users.find(
+      (user: FarcasterUser) =>
+        user.username.toLowerCase() === username.toLowerCase(),
     );
-    
+
     const selectedUser = exactMatch || users[0];
 
-    return NextResponse.json({ user: selectedUser });
-
+    // Cache successful responses for 1 day on Vercel Edge
+    const cachedResponse = NextResponse.json({ user: selectedUser });
+    cachedResponse.headers.set(
+      "Cache-Control",
+      "public, s-maxage=86400, stale-while-revalidate=60",
+    );
+    return cachedResponse;
   } catch (error) {
     console.error("Error in search-user API:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

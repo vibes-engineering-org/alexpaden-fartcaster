@@ -7,100 +7,132 @@ export type FartBubbleConfig = {
   backgroundColor?: string;
 };
 
-export async function generateFartBubbleImage(config: FartBubbleConfig): Promise<string> {
+// Helper function to load an image with Promise
+async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
-    // Create canvas programmatically
-    const canvas = document.createElement("canvas");
+    const img = new Image();
+    img.crossOrigin = "anonymous";
     
-    // Set canvas size for mobile (square format, good for sharing)
+    img.onload = () => {
+      console.log(`✅ Image loaded successfully: ${src}`);
+      resolve(img);
+    };
+    
+    img.onerror = () => {
+      console.error(`❌ Failed to load image: ${src}`);
+      reject(new Error(`Failed to load image: ${src}`));
+    };
+    
+    img.src = src;
+  });
+}
+
+export async function generateFartBubbleImage(config: FartBubbleConfig): Promise<string> {
+  console.log("🎨 Starting fart bubble generation...");
+  
+  try {
+    // Step 1: Create canvas
+    console.log("📐 Creating canvas with dimensions 500x500");
+    const canvas = document.createElement("canvas");
     canvas.width = 500;
     canvas.height = 500;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) {
-      reject(new Error("Canvas context not available"));
-      return;
+      throw new Error("Canvas context not available");
     }
 
-    // Create soft gradient background
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, "#f8fafc"); // Very light gray-blue
-    gradient.addColorStop(0.5, "#f1f5f9"); // Slightly darker
-    gradient.addColorStop(1, "#e2e8f0"); // Light gray
-    
-    ctx.fillStyle = gradient;
+    // Step 2: Draw white background
+    console.log("⚪ Drawing white background");
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    console.log("✅ White background drawn");
 
-    // Load and draw profile image
-    const profileImg = new Image();
-    profileImg.crossOrigin = "anonymous";
+    // Step 3: Load profile image sequentially
+    console.log("🖼️ Loading profile image...");
+    const profileImg = await loadImage(config.profileImageUrl);
+
+    // Step 4: Load stink cloud image (with error handling)
+    console.log("☁️ Loading stink cloud image...");
+    let stinkCloudImg: HTMLImageElement | null = null;
+    try {
+      stinkCloudImg = await loadImage("/images/stink-cloud.png");
+    } catch (error) {
+      console.warn("⚠️ Stink cloud failed to load, continuing without it:", error);
+    }
+
+    // Step 5: Draw profile image (clipped to circle) FIRST
+    console.log("🎭 Drawing circular profile image");
+    const profileSize = 180;
+    const profileX = (canvas.width - profileSize) / 2;
+    const profileY = (canvas.height - profileSize) / 2 - 40;
+
+    // Add subtle shadow for depth
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
     
-    profileImg.onload = () => {
-      try {
-        // Draw profile picture (centered, with some padding)
-        const profileSize = 180;
-        const profileX = (canvas.width - profileSize) / 2;
-        const profileY = (canvas.height - profileSize) / 2 - 40; // Slightly above center
+    // Create circular clipping path
+    ctx.beginPath();
+    ctx.arc(profileX + profileSize/2, profileY + profileSize/2, profileSize/2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(profileImg, profileX, profileY, profileSize, profileSize);
+    ctx.restore();
+    
+    // Add subtle border for definition
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(profileX + profileSize/2, profileY + profileSize/2, profileSize/2, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    console.log("✅ Profile image drawn with border");
 
-        // Draw circular profile picture
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(profileX + profileSize/2, profileY + profileSize/2, profileSize/2, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(profileImg, profileX, profileY, profileSize, profileSize);
-        ctx.restore();
+    // Step 6: Draw stink cloud ON TOP of profile (if loaded)
+    if (stinkCloudImg) {
+      console.log("💨 Drawing stink cloud in front of profile");
+      console.log(`Stink cloud original dimensions: ${stinkCloudImg.width}x${stinkCloudImg.height}`);
+      
+      // Preserve aspect ratio of the original image
+      const aspectRatio = stinkCloudImg.width / stinkCloudImg.height;
+      const cloudHeight = profileSize * 0.9; // Larger but not overwhelming
+      const cloudWidth = cloudHeight * aspectRatio;
+      
+      // Position cloud at bottom-left, extending outward
+      const cloudX = profileX - cloudWidth * 0.6; // Start from left edge
+      const cloudY = profileY + profileSize * 0.5; // Start from middle-bottom of profile
+      
+      // Set image smoothing to prevent pixelation
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Add slight rotation for dynamic effect
+      ctx.save();
+      ctx.translate(cloudX + cloudWidth/2, cloudY + cloudHeight/2);
+      ctx.rotate(-2 * Math.PI / 180); // Subtle angle
+      ctx.drawImage(stinkCloudImg, -cloudWidth/2, -cloudHeight/2, cloudWidth, cloudHeight);
+      ctx.restore();
+      
+      console.log(`✅ Stink cloud drawn at ${cloudWidth}x${cloudHeight}`);
+    }
 
-        // Draw fart bubble (green, to the right and slightly below profile)
-        const bubbleX = profileX + profileSize - 20;
-        const bubbleY = profileY + profileSize - 60;
-        
-        // Main bubble
-        ctx.fillStyle = "#22c55e"; // Green-500
-        ctx.strokeStyle = "#16a34a"; // Green-600
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(bubbleX + 40, bubbleY + 20, 35, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+    // Step 7: Text overlay removed for simplicity
+    console.log("📝 Text overlay skipped (removed for simplicity)");
 
-        // Smaller bubbles trailing off
-        ctx.fillStyle = "#22c55e";
-        ctx.strokeStyle = "#16a34a";
-        ctx.lineWidth = 2;
-        
-        // Medium bubble
-        ctx.beginPath();
-        ctx.arc(bubbleX + 80, bubbleY + 10, 18, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        
-        // Small bubble
-        ctx.beginPath();
-        ctx.arc(bubbleX + 100, bubbleY - 5, 10, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+    // Step 8: Convert to JPEG
+    console.log("📸 Converting canvas to JPEG...");
+    const dataURL = canvas.toDataURL("image/jpeg", 0.95);
+    console.log("✅ Successfully converted to JPEG");
+    console.log(`📊 Data URL length: ${dataURL.length} characters`);
+    console.log(`🔍 Data URL preview: ${dataURL.substring(0, 50)}...`);
+    
+    console.log("🎉 Fart bubble generation complete!");
+    return dataURL;
 
-        // Add text at bottom
-        ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-        ctx.fillStyle = "#64748b"; // Slate-500
-        ctx.textAlign = "center";
-        
-        const text = `${config.currentUser} farted on ${config.username}`;
-        const textY = canvas.height - 40;
-        ctx.fillText(text, canvas.width / 2, textY);
-
-        // Convert to data URL
-        const dataURL = canvas.toDataURL("image/png", 0.9);
-        resolve(dataURL);
-      } catch (error) {
-        reject(error);
-      }
-    };
-
-    profileImg.onerror = () => {
-      reject(new Error("Failed to load profile image"));
-    };
-
-    profileImg.src = config.profileImageUrl;
-  });
+  } catch (error) {
+    console.error("💥 Error generating fart bubble:", error);
+    throw error;
+  }
 }

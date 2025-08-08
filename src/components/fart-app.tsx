@@ -77,7 +77,7 @@ export function FartApp() {
       // Generate the fart bubble image
       const imageUrl = await generateFartBubbleImage({
         profileImageUrl: user.pfp_url,
-        username: user.display_name || user.username,
+        username: user.username, // Use username directly, not display_name
         currentUser: currentUser,
       });
 
@@ -104,7 +104,7 @@ export function FartApp() {
     if (!generatedImageUrl) return;
 
     const link = document.createElement("a");
-    link.download = `fart-on-${targetUser?.username || username}.png`;
+    link.download = `fart-on-${targetUser?.username || username}.jpg`;
     link.href = generatedImageUrl;
     document.body.appendChild(link);
     link.click();
@@ -207,11 +207,6 @@ export function FartApp() {
             />
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {currentUser} farted on @{targetUser.username}
-            </p>
-          </div>
         </div>
       )}
     </div>
