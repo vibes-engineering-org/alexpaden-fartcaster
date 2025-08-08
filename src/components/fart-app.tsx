@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { FartBubbleGenerator, useFartBubbleGenerator } from "~/components/fart-bubble-generator";
+import { useFartBubbleGenerator } from "~/components/fart-bubble-generator";
 import { ShareCastButton } from "~/components/share-cast-button";
 import { useMiniAppSdk } from "~/hooks/use-miniapp-sdk";
 import { Search, Download, Zap } from "lucide-react";
@@ -125,8 +125,6 @@ export function FartApp() {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-      <FartBubbleGenerator />
-      
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">

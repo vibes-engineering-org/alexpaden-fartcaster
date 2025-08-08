@@ -14,21 +14,18 @@ export function useFartBubbleGenerator() {
 
   const generateImage = useCallback(async (config: FartBubbleConfig): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        reject(new Error("Canvas not initialized"));
-        return;
-      }
+      // Create canvas programmatically if ref is not available
+      const canvas = canvasRef.current || document.createElement("canvas");
+      
+      // Set canvas size for mobile (square format, good for sharing)
+      canvas.width = 500;
+      canvas.height = 500;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) {
         reject(new Error("Canvas context not available"));
         return;
       }
-
-      // Set canvas size for mobile (square format, good for sharing)
-      canvas.width = 500;
-      canvas.height = 500;
 
       // Create soft gradient background
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
